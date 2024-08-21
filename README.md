@@ -1,6 +1,8 @@
 # Visual Influence Networks
 This GitHub repository contains code for the reconstruction and analysis of visual influence networks.
-The details of the project is described in [[1]](#1).
+The details of the project is described in:
+
+> Yoshida, K., Warren, W. H., & di Bernardo, M. (in prep). Visual influence networks in walking crowds.
 
 
 ## Repository structure
@@ -10,6 +12,7 @@ The repository is organized into 3 main folders:
     * This folder contains: 
         * Main scripts (placed directly in this folder): Scripts used to analyze the specific data in this project. These should be modified when used for other datasets. They are named in the order that was used in the analysis.
         * [**`utils/`**](code/utils/): A subfolder containing utility functions used across the main scripts. These functions can be reused in the analyses of other datasets.
+            * The scripts to calculate the TDDC before reconstructing visual influence networks were based on the scripts used in [Lombard et al. (2020)](#references).
 * [**`data/`**](data/)
     * This folder should contain experimental data. Other files produced in the analysis will be stored in this folder.
     * The structure of this folder may vary depending on the specific requirements of your experiment and analysis.
@@ -60,5 +63,6 @@ Modify the main scripts to match the structure of your data and run them to perf
 For any questions or issues, please contact Kei Yoshida at kei_yoshida@brown.edu.
 
 ## References
-<a id="1">[1]</a> 
 Yoshida, K., Warren, W. H., & di Bernardo, M. (in prep). Visual influence networks in walking crowds.
+
+Lombardi, M., Warren, W. H., & di Bernardo, M. (2020). Nonverbal leadership emergence in walking groups. Scientific Reports, 10(1), 18948. https://doi.org/10.1038/s41598-020-75551-2
