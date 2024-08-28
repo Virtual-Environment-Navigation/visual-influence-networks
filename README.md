@@ -12,7 +12,7 @@ The repository is organized into 3 main folders:
     * This folder contains: 
         * Main scripts (placed directly in this folder): Scripts used to analyze the specific data in this project. These should be modified when used for other datasets. They are named in the order that was used in the analysis.
         * [**`utils/`**](code/utils/): A subfolder containing utility functions used across the main scripts. These functions can be reused in the analyses of other datasets.
-            * The scripts to calculate the TDDC before reconstructing visual influence networks were based on the scripts used in [Lombard et al. (2020)](#references).
+            * The scripts to calculate the TDDC before reconstructing visual influence networks were based on the scripts used in [Lombardi et al. (2020)](#references).
 * [**`data/`**](data/)
     * This folder should contain experimental data. Other files produced in the analysis will be stored in this folder.
     * The structure of this folder may vary depending on the specific requirements of your experiment and analysis.
