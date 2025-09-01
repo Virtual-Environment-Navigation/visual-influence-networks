@@ -50,7 +50,10 @@ def normalize_leadership(leadership : NDArray[Any],
     norm_leadership: numpy array of normalized leadership values with shape (N,)
     '''
     if (norm_method=="max_leadership"):
-        norm_leadership = leadership / max(leadership)
+        if max(leadership) == 0:
+            norm_leadership = np.full_like(leadership, np.nan)
+        else:
+            norm_leadership = leadership / max(leadership)
     elif (norm_method=="crowd_size"):
         N = leadership.shape[0]
         norm_leadership = leadership / (N-1)
@@ -59,7 +62,7 @@ def normalize_leadership(leadership : NDArray[Any],
         norm_leadership[leadership > 0] /= max(leadership)
         norm_leadership[leadership < 0] /= abs(min(leadership))
     return norm_leadership
-    
+
 
 def get_NI(weights : NDArray[Any], 
            normalize : bool = True, 
