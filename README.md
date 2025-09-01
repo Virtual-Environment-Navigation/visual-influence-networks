@@ -62,7 +62,7 @@ Modify the main scripts to match the structure of your data and run them to perf
 
 ## Contact
 
-For any questions or issues, please contact Kei Yoshida at kei_yoshida@brown.edu.
+For any questions or issues, please contact Kei Yoshida at kei.yoshida41@gmail.com.
 
 ## References
 Yoshida, K., Warren, W. H., & di Bernardo, M. (in prep). Visual influence networks in walking crowds.
