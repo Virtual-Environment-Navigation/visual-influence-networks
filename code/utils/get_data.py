@@ -52,7 +52,9 @@ def get_velocity(pos : NDArray[Any],
             new_value = 0 if (insert_row == 'zeros') else vel[0]
             vel = np.insert(vel, 0, new_value)  # add at the beginning
         else:   # if pos is 2D or more
-            new_row = np.zeros_like(vel[0]) if (insert_row == 'zeros') else vel[0]
+            new_row = (
+                np.zeros_like(vel[0]) if (insert_row == 'zeros') else vel[0]
+            )
             vel = np.vstack((new_row, vel))
     
     return vel
@@ -83,7 +85,7 @@ def get_acceleration(vel : NDArray[Any],
     Returns:
     -----
     acc: ndarray of the same shape as vel
-        Accelerations. By default, the values of the first row are zeros.
+        Accelerations. By default, first row values are zeros.
     '''
     dt = 1/SAMP_FREQ    # time steps
     # calculate accelerations (ignore the first row with zeros)

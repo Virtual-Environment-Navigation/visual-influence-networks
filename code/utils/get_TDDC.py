@@ -1,5 +1,4 @@
 # get TDDC values
-# Nov 14, 2023 KY
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,13 +19,10 @@ def get_TDDC_ij(xvel_i : NDArray[Any],
 
     Parameters
     ----------
-    xvel_i : ndarray of shape (num_frames,)
-        Velocities on x axis for pedestrian i.
-    yvel_i : ndarray of shape (num_frames,)
-        Velocities on y axis for pedestrian i.
-    xvel_j : ndarray of shape (num_frames,)
-        Velocities on x axis for pedestrian j.
-    yvel_j : ndarray of shape (num_frames,)
+    xvel_i, yvel_i : ndarray of shape (num_frames,)
+        Velocities on x & y axis for pedestrian i.
+    xvel_j, yvel_j : ndarray of shape (num_frames,)
+        Velocities on x & y axis for pedestrian j.
         Velocities on y axis for pedestrian j.
     SAMP_FREQ : int or float
         sampling rate (in Hz)
@@ -138,12 +134,8 @@ def get_TDDC(xvel : NDArray[Any],
 
     Parameters
     ----------
-    xvel : ndarray
-        Shape (num_frames, N). Represents velocities on x axis for all 
-        pedestrians in a given time window.
-    yvel : ndarray
-        Shape (num_frames, N). Represents velocities on y axis for all 
-        pedestrians in a given time window.
+    xvel, yvel : ndarray of shape (num_frames, N)
+        Velocities on x & y axis for all pedestrians in the time window.
     SAMP_FREQ : int or float
         sampling rate (in Hz).
     TAU (default = 3) : int or float (optional)
