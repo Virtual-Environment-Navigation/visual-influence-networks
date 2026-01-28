@@ -45,14 +45,14 @@ def init_xy(x : NDArray[np.number],
     Turn two arrays of x & y positions into one array.
     
     Parameters
-    -----
-    x, y : numpy arrays of float
+    ----------
+    x, y : ndarrays of float
         Shape (num_datapoints,).
         x & y positions of a given pedestrian.
 
     Returns
-    -----
-    xy : numpy array of float
+    -------
+    xy : ndarray of float
         Shape (num_datapoints, 2).
         the combined xy positions.
     '''
@@ -69,14 +69,14 @@ def get_present_agents(x : NDArray[np.number]) -> NDArray[np.integer]:
     who are present in the data (not missing).
 
     Parameters
-    -----
-    x : numpy array of float
+    ----------
+    x : ndarray of float
         Shape (N,).
         x positions of N pedestrians.
 
     Returns
-    -----
-    ind : numpy array of int
+    -------
+    ind : ndarray of int
         Shape (num_present_pedestrians,). 
         A list of indices (= pedestrian_ID - 1) of pedestrians who are not missing in this dataset
     '''
@@ -96,7 +96,7 @@ def find_tangent_lines(center: Tuple[float, float],
     Used in get_occlusion().
 
     Parameters
-    -----
+    ----------
     center : a tuple of float
         The coordinates of the center of the ellipse.
     semi_axes : a tuple of float
@@ -107,7 +107,7 @@ def find_tangent_lines(center: Tuple[float, float],
         The coordinates of the reference point.
 
     Returns
-    -----
+    -------
     (m1, h1, x1, y1) : tuple
         Slope(m), intercept(h), and tangent points (x,y) of the first tangent.
     (m2, h2, x2, y2) : tuple
@@ -154,17 +154,17 @@ def get_quadrant(x : NDArray[np.number],
     Used to compute angles.
 
     Parameters
-    -----
-    x, y : numpy array of float
+    ----------
+    x, y : ndarray of float
         Shape (N,).
         x & y positions of all pedestrians.
-    tanX, tanY : numpy array of float
+    tanX, tanY : ndarray of float
         Shape (N, N, 2).
         x & y tangent points.
     
     Returns
-    -----
-    quadrant : numpy array of int
+    -------
+    quadrant : ndarray of int
         Shape (N, N, 2). 
         Represents quadrant 1-4; 0 for itself; nan if missing
     '''
@@ -199,15 +199,15 @@ def get_angle_quadrant(m : NDArray[np.number],
     Change [-90, 90] to [-180, 180].
 
     Parameters
-    -----
-    m : numpy array of floats
+    ----------
+    m : ndarray of floats
         Shape (N, N, 2). Represents slopes.
-    quadrant : numpy array of integers 
+    quadrant : ndarray of integers 
         Shape (N, N, 2). Used as mask.
 
     Returns
-    -----
-    angle : numpy array of floats 
+    -------
+    angle : ndarray of floats 
         Shape (N, N, 2) = [i,j,?], with i as a center, the angle of the 
         line/tangent point from x axis.
     '''
@@ -226,23 +226,21 @@ def is_point_within_view(heading : NDArray[np.number],
     Determine whether (tangent) points are within field of view, based on the xy positions.
 
     Parameters
-    -----
-    heading : numpy array of floats 
+    ----------
+    heading : ndarray of floats 
         Shape (N,). 
         *CAUTION* values increase clockwise (in degrees).
-    tan_angle : numpy array of floats 
+    tan_angle : ndarray of floats 
         Shape (N, N, 2). 
         Represents angles between tangent points and x-axis with viewer i as a 
         center (i x j x 2 lines).
         *CAUTION* angles increase counterclockwise (in degrees).
-
-    [Optional]
-    view_angle (default = 180) : float
+    view_angle (default = 180) : float (optional)
         Assumed field of view in degree.
 
     Returns
-    -----
-    isWithinView : numpy array of bool
+    -------
+    isWithinView : ndarray of bool
         Shape (N, N, 2) = (viewer i, viewed j, 2 lines).
         * if True -> a point is within field of view
         * if False -> a point is NOT in view. 
@@ -275,40 +273,38 @@ def get_angles_in_view(heading : NDArray[np.number],
     Compute view angle of each pedestrian considering field of view
 
     Parameters
-    -----
-    heading : numpy array of float
+    ----------
+    heading : ndarray of float
         Shape (N,). 
         Heading of each pedestrian.
-    m : numpy array of float
+    m : ndarray of float
         Shape (N, N, 2). 
         Represents slope for each tangent line.
-    m_view_reshaped : numpy array of float
+    m_view_reshaped : ndarray of float
         Shape (N, N).
         Slopes of field of view (N,), but reshaped into (N, N). 
-    tan_angle : numpy array of floats 
+    tan_angle : ndarray of floats 
         Shape (N, N, 2). 
         Represents angles between tangent points and x-axis with viewer i as a 
         center (i x j x 2 lines).
         *CAUTION* angles increase counterclockwise (in degrees).
-    original_angle : numpy array of floats
+    original_angle : ndarray of floats
         Shape (N, N). 
         View angle without considering occlusion or field of view.
-
-    [Optional]
-    view_angle (default = 180) : int or float
+    view_angle (default = 180) : int or float (optional)
         field of view in degree 
 
     Returns
-    -----
-    new_angle : numpy array of float
+    -------
+    new_angle : ndarray of float
         Shape (N, N). 
         View angle after considering occlusion & field of view .
-    new_m : numpy array of float
+    new_m : ndarray of float
         Shape (N, N, 2).
         Slope for lines creating visual angle.
         Tangent line is replaced with the line for field of vision when visual 
         angle is changed by it.
-    new_tan_angle : numpy array of float
+    new_tan_angle : ndarray of float
         Shape (N, N, 2). 
         Angles between tangent point and x axis with i (viewer) as a center. 
         Similarly to new_m, angle is replaced when field of vision is affecting 
@@ -358,7 +354,7 @@ def get_occluded_angles(heading : NDArray[np.number],
     Used in get_view_angle().
 
     Parameters
-    -----
+    ----------
     heading : numpy arary of float
         Shape (N,).
     angle_FOV: numpy arary of float
@@ -367,7 +363,7 @@ def get_occluded_angles(heading : NDArray[np.number],
     m_FOV : numpy arary of float
         Shape (N, N, 2).
         Slopes for tangenet lines where field of view is considered.
-    tan_angle : numpy array of float
+    tan_angle : ndarray of float
         Shape (N, N, 2). 
         Angles between tangent point and x axis with i (viewer) as a center. 
         - original; without consideration of field of view or occlusion
@@ -376,7 +372,7 @@ def get_occluded_angles(heading : NDArray[np.number],
         Indicates distance.
 
     Returns
-    -----
+    -------
     angle_visual : numpy arary of float
         Shape (N, N).
         View angles where field of view and occlusion are considered.
@@ -465,17 +461,17 @@ def get_distance(x : NDArray[np.number],
     Compute the distance matrix.
 
     Parameters
-    -----
-    x : numpy array of float
+    ----------
+    x : ndarray of float
         Shape (N,).
         x positions for all pedestrians.
-    y : numpy array of float
+    y : ndarray of float
         Shape (N,).
         y positions for all pedestrians.
 
     Returns:
     -----
-    dist_all : numpy array of float
+    dist_all : ndarray of float
         Shape (N, N). 
         Matrix of all pair-wise distances.
     '''
@@ -494,24 +490,22 @@ def get_FOV(x : NDArray[np.number],
     Determine who is within field of view, based on their xy positions.
 
     Parameters
-    -----
-    x : numpy array of float
+    ----------
+    x : ndarray of float
         Shape (N,).
         x positions for all pedestrians.
-    y : numpy array of float
+    y : ndarray of float
         Shape (N,).
         y positions for all pedestrians.
-    heading : numpy array of float
+    heading : ndarray of float
         Shape (N,).
         heading directions for all pedestrians.
-
-    [Optional]
-    view_angle (default = 180) : int or float
+    view_angle (default = 180) : int or float (optional)
         assumed field of view.
 
     Returns:
     -----
-    isWithinView : numpy array of bool
+    isWithinView : ndarray of bool
         Shape (N, N) = (viewer, viewed).
         * if True -> within field of view
         * if False -> not within field of view
@@ -543,25 +537,22 @@ def get_view_tangent(x : NDArray[np.number],
     Compute components of tangent lines.
 
     Parameters
-    -----
-    x, y, heading : numpy array of float 
-        Shape (N,).
-    
-    [Optional]
-    agent_width (default = 0.45) : float
+    ----------
+    x, y, heading : ndarray of float of shape (N,)
+    agent_width (default = 0.45) : float (optional)
         ellipse width (major axis)
-    agent_dept (default = 0.244) : float
+    agent_dept (default = 0.244) : float (optional)
         ellipse depth (minor axis)
 
     Returns
-    -----
-    m, h : numpy arrays of float
+    -------
+    m, h : ndarrays of float
         Shape (N, N, 2) = (viewer i, viewed j, 2 tangent lines).
         Slopes (m) & intercepts (h) of the tangent lines.
-    tanX, tanY : numpy array of float
+    tanX, tanY : ndarray of float
         Shape (N, N, 2) = (viewer i, viewed j, 2 tangent lines).
         x & y positions of the tangent points.
-    angle : numpy array of float
+    angle : ndarray of float
         Shape (N, N, 2) = (viewer i, viewed j, 2 tangent lines).
         Angles between tangent point and x axis with i (viewer) as a center.
     '''
@@ -622,30 +613,28 @@ def get_view_angle(heading : NDArray[np.number],
     2. after considering occlusion & field of view
 
     Parameters
-    -----
-    heading : numpy array of float 
+    ----------
+    heading : ndarray of float 
         Shape (N,).
-    m : numpy array of float
+    m : ndarray of float
         Shape (N, N, 2).
         Slopes for each tangent line.
-    tan_angle : numpy array of float
+    tan_angle : ndarray of float
         Shape (N, N, 2).
         Angles between tangent point and x axis with i (viewer) as a center.
         Calculated in get_view_tangent().
-    dist : numpy array of float 
+    dist : ndarray of float 
         Shape (N, N).
         Calculated in get_distance().
-        
-    [Optional]
-    view_angle (default = 180) : int or float 
+    view_angle (default = 180) : int or float (optional)
         field of view in degree.
 
     Returns
-    -----
-    original_angle : numpy array of float
+    -------
+    original_angle : ndarray of float
         Shape (N, N).
         View angle without considering occlusion or field of view.
-    new_angle : numpy array of float
+    new_angle : ndarray of float
         Shape (N, N).
         View angle after considering field of view & occlusion.
     '''
@@ -698,22 +687,20 @@ def get_visibility_t(x : NDArray[np.number],
     
 
     Parameters
-    -----
-    x, y, heading : numpy array of float
+    ----------
+    x, y, heading : ndarray of float
         Shape (N,).
         Respectively, x, y positiosn & heading (clockwise) of N pedestrians.
-
-    [Optional]
-    agent_width (default = 0.45) : float
+    agent_width (default = 0.45) : float (optional)
         assumed shoulder width of agents (in meters)
-    agent_depth (default = 0.244) : float
+    agent_depth (default = 0.244) : float (optional)
         assumed depth (from chest to back) of agents (in meters)
-    view_angle (default = 180) : int or float
+    view_angle (default = 180) : int or float (optional)
         assumed field of view (in degrees)
 
     Returns
-    -----
-    visibility_mat : numpy array of float
+    -------
+    visibility_mat : ndarray of float
         Shape (N, N) = (viewer i, viewed j).
         Matrix of visibility for each pair, ranging [0,1].
         * 0 if outside of view or completely occluded or missing
@@ -750,23 +737,21 @@ def get_visibility_all(x : NDArray[np.number],
     compute visibility for each time point.
 
     Parameters
-    -----
-    x, y, heading : numpy array of float
+    ----------
+    x, y, heading : ndarray of float
         Shape (num_timepoints, N).
         Respectively, x, y positiosn & heading (clockwise).
         NOTE: x, y, & heading all need to have the same shape
-
-    [Optional]
-    agent_width (default = 0.45) : float
+    agent_width (default = 0.45) : float (optional)
         assumed shoulder width of agents (in meters)
-    agent_depth (default = 0.244) : float
+    agent_depth (default = 0.244) : float (optional)
         assumed depth (from chest to back) of agents (in meters)
-    view_angle (default = 180) : int or float
+    view_angle (default = 180) : int or float (optional)
         assumed field of view (in degrees)
 
     Returns
-    -----
-    visibility_mat : numpy array of float
+    -------
+    visibility_mat : ndarray of float
         Shape (num_timepoints, N, N) = [t, viewer i, viewed j].
         Visibility for each pair, values ranging between [0,1].
     '''
@@ -774,12 +759,15 @@ def get_visibility_all(x : NDArray[np.number],
     visibility_mat = np.empty([num_timepoints, N, N])
 
     for t in range(num_timepoints):
-        visibility_mat[t,:,:] = get_visibility_t(x[t], y[t], heading[t],
-                                                 agent_width=agent_width,
-                                                 agent_depth=agent_depth,
-                                                 view_angle=view_angle)
+        visibility_mat[t,:,:] = get_visibility_t(
+            x[t], y[t], heading[t],
+            agent_width=agent_width, agent_depth=agent_depth,
+            view_angle=view_angle
+        )
     
     if (np.any(visibility_mat)>1) or (np.any(visibility_mat)<0):
-        raise ValueError('Something went wrong with the visibility calculation')
+        raise ValueError(
+            'Something went wrong with the visibility calculation'
+        )
 
     return visibility_mat

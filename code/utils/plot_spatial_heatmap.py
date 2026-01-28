@@ -28,7 +28,7 @@ def gaussian(height : float,
     Returns a Gaussian function with the given parameters.
 
     Parameters
-    -----
+    ----------
     height : float
         The peak height of the Gaussian.
     center_x : float 
@@ -41,31 +41,34 @@ def gaussian(height : float,
         The standard deviation along the y-axis.
 
     Returns
-    -----
+    -------
     Callable[[float, float], float] : function
-        A function that takes x and y coordinates and returns the value of the 
-        Gaussian function at that point.
+        A function that takes x and y coordinates and returns the value 
+        of the Gaussian function at that point.
     '''
     width_x = float(width_x)
     width_y = float(width_y)
-    return lambda x,y: height*np.exp(
-                -(((center_x-x)/width_x)**2+((center_y-y)/width_y)**2)/2)
+
+    return (
+        lambda x,y: 
+        height*np.exp(-(((center_x-x)/width_x)**2+((center_y-y)/width_y)**2)/2)
+    )
 
 
 # used in fitgaussian()
 def moments(data : np.ndarray) -> tuple:
     '''
-    Returns the gaussian parameters (height, x, y, width_x, width_y) of a 2D 
-    distribution by calculating its moments.
+    Returns the gaussian parameters (height, x, y, width_x, width_y) of 
+    a 2D distribution by calculating its moments.
 
     Parameters
-    -----
-    data : numpy array of numbers
+    ----------
+    data : ndarray of numbers
         Shape (num_x_cells, num_y_cells).
         A 2D array representing the data distribution.
 
     Returns
-    -----
+    -------
     tuple : (float, float, float, float, float)
         The Gaussian parameters: (height, x, y, width_x, width_y).
         See the parameter description in gaussian().
@@ -86,25 +89,25 @@ def moments(data : np.ndarray) -> tuple:
 # used in get_SD()
 def fitgaussian(data : np.ndarray) -> tuple:
     '''
-    Returns the gaussian parameters (height, x, y, width_x, width_y) of a 2D 
-    distribution found by a fit.
+    Returns the gaussian parameters (height, x, y, width_x, width_y) of 
+    a 2D distribution found by a fit.
     It uses least squares fitting to fit a Guassian.
 
     Parameters
-    -----
-    data : numpy array
+    ----------
+    data : ndarray
         Shape (num_x_cells, num_y_cells).
         A 2D array representing the data distribution.
 
     Returns
-    -----
+    -------
     tuple : (float, float, float, float, float)
         The Gaussian parameters: (height, x, y, width_x, width_y).
         See the parameter description in gaussian().
     '''
     params = moments(data)
-    errorfunction = lambda p: np.ravel(gaussian(*p)(*np.indices(data.shape)) -
-                                 data)
+    errorfunction = (
+        lambda p: np.ravel(gaussian(*p)(*np.indices(data.shape)) - data))
     p, success = optimize.leastsq(errorfunction, params)
     return p
 
@@ -120,29 +123,26 @@ def get_PDF(pos_x : Union[np.ndarray, list],
             grid_width : Union[int, float] = 0.5) -> np.ndarray:
     '''
     Fit 2d gaussian & get PDF.
-    Refer to: 
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html
 
     Parameters
-    -----
-    pos_x, pos_y : numpy array or python list
+    ----------
+    pos_x, pos_y : ndarray or python list
         Shape (num_datapoints,).
         x & y positions (in meters).
-
-    [Optional]
-    xmin, xmax, ymin, ymax : int
+    xmin, xmax, ymin, ymax : int (optional)
         Limits on x & y coordinates.
         default = int closest to the min/max in pos_x/pos_y.
-    grid_width (default = 0.5) : float
+    grid_width (default = 0.5) : float (optional)
         Defines cell size in the grid.
 
     Returns
-    -----
-    Z : numpy array
+    -------
+    Z : ndarray
         Shape (num_x_cells, num_y_cells).
         Values representing PDF.
     '''
-    # ----- convert python list to numpy array-----
+    # ----- convert python list to ndarray-----
     if isinstance(pos_x, list):
         pos_x = np.array(pos_x)
     if isinstance(pos_y, list):
@@ -185,37 +185,34 @@ def get_SD(pos_x : Union[np.ndarray, list],
            ) -> tuple[float, float, np.ndarray]:
     '''
     Fit 2d gaussian & get SD.
-    Refer to: 
     * https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html
     * https://scipy-cookbook.readthedocs.io/items/FittingData.html 
 
     Parameters
-    -----
-    pos_x, pos_y : numpy array or python list
+    ----------
+    pos_x, pos_y : ndarray or python list
         Shape (num_datapoints,).
         x & y positions (in meters).
-
-    [Optional]
-    xmin, xmax, ymin, ymax : int
+    xmin, xmax, ymin, ymax : int (optional)
         Limits on x & y coordinates.
         default = integers closest to the min/max in pos_x/pos_y
-    grid_width (float): default = 0.5
+    grid_width (float): default = 0.5 (optional)
         Defines cell size in the grid.
 
     Returns
-    -----
+    -------
     SD_width_x, SD_width_y : float
         The distance 1 SD represents on the x & y axes (in meters)
-    Z : numpy array
+    Z : ndarray
         Shape (num_x_cells, num_y_cells).
         Values representing PDF.
     '''
     # calculate PDF at each grid point
     # Z : (num_cell_x, num_cell_y) - same shape as X & Y
-    Z = get_PDF(pos_x, pos_y,
-                xmin=xmin, xmax=xmax,
-                ymin=ymin, ymax=ymax,
-                grid_width=grid_width)
+    Z = get_PDF(
+        pos_x, pos_y,
+        xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, grid_width=grid_width
+    )
     # fit a Gaussian distribution, using least squares, to the PDF to get SDs
     _, _, _, width_x, width_y = fitgaussian(Z)
     # Gaussian fitting is in units of grid_width
@@ -235,16 +232,16 @@ def transform_m2SD(pos_x_M : Union[np.ndarray, list],
     Transform given positions (m) to new positins (SD).
 
     Parameters
-    -----
-    pos_x_M, pos_y_M : numpy array or python list 
+    ----------
+    pos_x_M, pos_y_M : ndarray or python list 
         Shape (num_datapoints,).
         x & y positions (in meters).
     SD_width_x, SD_width_y : float
         The distance 1 SD represents on the x & y axes (in meters).
 
     Returns
-    -----
-    pos_x_SD, pos_y_SD : numpy array of float
+    -------
+    pos_x_SD, pos_y_SD : ndarray of float
         Shape (num_datapoints,).
         x & y positions (in SD).
     '''
@@ -271,34 +268,32 @@ def get_filter(x : list,
                threshold : Union[int, float] = None) -> np.ndarray[np.bool_]:
     '''
     Get a mask to filter out the data points that are in cells where 
-    probability (based on a given PDF) is less than a threshold & update PDF
-    (set the probability of filtered cells to 0).
+    probability (based on a given PDF) is less than a threshold & update 
+    PDF (set the probability of filtered cells to 0).
 
     Parameters
-    -----
+    ----------
     x, y : python list
         Shape (num_datapoints,).
         x & y positions.
-
-    [Optional]
-    xmin, xmax, ymin, ymax : int
+    xmin, xmax, ymin, ymax : int (optional)
         Limits on x & y coordinates.
         default = integers closest to the min/max in pos_x/pos_y
-    grid_width (default = 0.5) : float
-    filtering method (default = 'cell_count') : str
+    grid_width (default = 0.5) : float (optional)
+    filtering method (default = 'cell_count') : str (optional)
         the outputs are removed if... 
         * if 'cell_count' -> # of datapoints in the cell is less than 
         a threshold (default = 5) 
         * if 'prob_density' -> cell probability is less than 
         a threshold (default = 0.001) 
-    threshold : int or float
+    threshold : int or float (optional)
         threashold used to filter outlier datapoints out.
         * if 'cell_count' -> default = 5
         * if 'prob_density' -> default = 0.001
 
     Returns
-    -----
-    mask : numpy array of bool
+    -------
+    mask : ndarray of bool
         Shape (num_datapoints,)
         * if True -> the datapoint should remain
         * if False -> the datapoint should be filtered out
@@ -320,7 +315,10 @@ def get_filter(x : list,
         for ix in range(len(x_range) - 1):
             for iy in range(len(y_range) - 1):
                 if counts[ix, iy] < threshold:
-                    cell_mask = (x >= x_range[ix]) & (x < x_range[ix + 1]) & (y >= y_range[iy]) & (y < y_range[iy + 1])
+                    cell_mask = (
+                        (x >= x_range[ix]) & (x < x_range[ix + 1]) 
+                        & (y >= y_range[iy]) & (y < y_range[iy + 1])
+                    )
                     mask |= cell_mask
 
         return ~mask
@@ -366,35 +364,33 @@ def plot_leadership_heatmap(leadership_values : np.ndarray,
     Plot mean leadership value for each cell in spatial heat map.
 
     Parameters
-    -----
-    leadership_values: numpy array of numbers
+    ----------
+    leadership_values: ndarray of numbers
         Shape (num_x_cells, num_y_cells).
         Leadership values to be plotted in the heat map.
     xmin, xmax, ymin, ymax : int
         Limits on x & y coordinates.
         default = integers closest to the min/max in pos_x/pos_y
     unit : str ('m' or 'SD')
-    
-    [Optional]
-    cmap_name (default : 'jet') : str
+    cmap_name (default : 'jet') : str (optional)
         colormap name (e.g., 'jet', 'gist_earth')
-    grid_width (default = 0.5) : float
+    grid_width (default = 0.5) : float (optional)
         cell size of the grid (in meters).
         each cell: grid_width x grid_width
-    saved (default = True) : bool
+    saved (default = True) : bool (optional)
         * if True -> save plot
         * if False -> show plot
-    title (default) : str
+    title (default) : str (optional)
         if not None, the string is added to the title
-    output_folder : str
+    output_folder : str (optional)
         output path
-    output_file : str
+    output_file : str (optional)
         output file name
-    output_format : str
+    output_format : str (optional)
         output file format (e.g., 'png', 'svg')
     
     Returns
-    -----
+    -------
     No returning value.
     '''
     # --- init ---
@@ -415,10 +411,10 @@ def plot_leadership_heatmap(leadership_values : np.ndarray,
     # transpose as imshow needs a value of shape (num_rows, num_columns) 
     # = (num_y_cells, num_x_cells)
     im = ax.imshow(np.transpose(leadership_values), cmap=cmap)
-    ax.set_xticks(np.arange(0, np.shape(leadership_values)[0], 1/grid_width), 
-                  x_range)
-    ax.set_yticks(np.arange(0, np.shape(leadership_values)[1], 1/grid_width), 
-                  y_range)
+    ax.set_xticks(
+        np.arange(0, np.shape(leadership_values)[0], 1/grid_width), x_range)
+    ax.set_yticks(
+        np.arange(0, np.shape(leadership_values)[1], 1/grid_width), y_range)
     ax.set_xlabel('Left-Right (' + unit + ')', fontsize=15)
     ax.set_ylabel('Back-Front (' + unit + ')', fontsize=15)
     fig.colorbar(im)
@@ -457,38 +453,36 @@ def plot_PDF(PDF : np.ndarray,
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html
 
     Parameters
-    -----
-    PDF : numpy array
+    ----------
+    PDF : ndarray
         Shape (num_x_cells, num_y_cells).
         probability densities to be plotted.
     xmin, xmax, ymin, ymax : int
         Limits on x & y coordinates.
         default = integers closest to the min/max in pos_x/pos_y
     unit : str ('m' or 'SD')
-    
-    [Optional]
-    cmap_name (default : 'jet') : str
+    cmap_name (default : 'jet') : str (optional)
         colormap name (e.g., 'jet', 'gist_earth')
-    grid_width (default = 0.5) : float
+    grid_width (default = 0.5) : float (optional)
         cell size of the grid (in meters).
         each cell: grid_width x grid_width
-    saved (default = True) : bool
+    saved (default = True) : bool (optional)
         * if True -> save plot
         * if False -> show plot
-    plotGaussian (default = False) : bool
+    plotGaussian (default = False) : bool (optional)
         * if True -> plot Gaussian lines
         * if False -> don't plot Gaussian lines
-    title (default = None) : str
+    title (default = None) : str (optional)
         if not None, the string is added to the title
-    output_folder : str
+    output_folder : str (optional)
         output path
-    output_file : str
+    output_file : str (optional)
         output file name
-    output_format : str
+    output_format : str (optional)
         output file format (e.g., 'png', 'svg')
 
     Returns
-    -----
+    -------
     No returning value.
     '''
     # --- error handling ---
@@ -523,10 +517,10 @@ def plot_PDF(PDF : np.ndarray,
                 verticalalignment='bottom', transform=ax.transAxes,
                 c="white")
         
-    ax.set_xticks(np.arange(0, np.shape(PDF)[0], 1/grid_width), 
-                  x_range)
-    ax.set_yticks(np.arange(0, np.shape(PDF)[1], 1/grid_width), 
-                  y_range)
+    ax.set_xticks(
+        np.arange(0, np.shape(PDF)[0], 1/grid_width), x_range)
+    ax.set_yticks(
+        np.arange(0, np.shape(PDF)[1], 1/grid_width), y_range)
     ax.set_xlabel('Left-Right ('+unit+')', fontsize=15)
     ax.set_ylabel('Back-Front ('+unit+')', fontsize=15)
     fig.colorbar(im)

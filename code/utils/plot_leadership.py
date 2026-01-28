@@ -9,26 +9,27 @@ from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
 
-def plot_leadership_dynamics(ranks : NDArray[np.integer], 
-                             measure_type : Literal['NI', 'NBI', 'CI', 'CBI'], 
-                             description : str = None,
-                             saved : bool = True,
-                             output_folder : str = 'output/leadership_dynamics/',
-                             output_file : str = 'leadership_dynamics',
-                             output_format : str = 'png') -> None:
+def plot_leadership_dynamics(
+        ranks : NDArray[np.integer], 
+        measure_type : Literal['DI', 'DBI', 'BI', 'CBI'], 
+        description : str = None,
+        saved : bool = True,
+        output_folder : str = 'output/leadership_dynamics/',
+        output_file : str = 'leadership_dynamics',
+        output_format : str = 'png'
+    ) -> None:
     '''
-    Plot changes in leadership ranking for a given measure for each pedestrian.
+    Plot changes in leadership ranking for a given measure 
+    for each pedestrian.
 
     Parameters
-    -----
-    ranks : numpy array of integers 
+    ----------
+    ranks : ndarray of integers 
         Shape (num_networks, N).
         leadership ranking
     measure: a string indicating the leadership measure type
-        one of: NI, NBI, CI, CBI
-
-    [Optional]
-    description (default = None) : str
+        one of: DI, DBI, BI, CBI
+    description (default = None) : str (optional)
         If not None, it will be included in the title.
     saved (default= True) : bool
     output_folder (default = 'output/leadership_dynamics/') : str
@@ -36,7 +37,7 @@ def plot_leadership_dynamics(ranks : NDArray[np.integer],
     output_format (default = 'png') : str
 
     Returns
-    -----
+    -------
     No returning value.
     '''
     # init
@@ -44,10 +45,10 @@ def plot_leadership_dynamics(ranks : NDArray[np.integer],
     x = np.arange(1, num_networks+1)
 
     measure_type_dict = {
-        'NI' : 'Net influence',
-        'NBI' : 'Net binary influence',
-        'CI' : 'Cumulative influence',
-        'CBI' : 'Cumulative binary influence',
+        'DI' : 'Direct Influence ',
+        'DBI' : 'Direct binary influence',
+        'BI' : 'Branching influence',
+        'CBI' : 'Branching binary influence',
     }
     measure_type_full = measure_type_dict[measure_type]
 
@@ -91,25 +92,22 @@ def plot_confidence_ellipse(x : NDArray[np.number],
                             **kwargs) -> Ellipse:
     """
     Create a plot of the covariance confidence ellipse of *x* and *y*.
-    From: 
     https://matplotlib.org/stable/gallery/statistics/confidence_ellipse.html
 
     Parameters
-    -----
-    x, y : numpy array of floats
+    ----------
+    x, y : ndarray of floats
         Shape (N,).
         xy positions of the ellipses.
     ax : matplotlib.axes.Axes
         The axes object to draw the ellipse into.
-
-    [Optional]
-    n_std : float
-        The number of standard deviations to determine the ellipse's radiuses.
+    n_std : float (optional)
+        Number of standard deviations to determine the ellipse's radii.
     **kwargs
         Forwarded to `~matplotlib.patches.Ellipse`
 
     Returns
-    -----
+    -------
     matplotlib.patches.Ellipse
     """
     if x.size != y.size:
@@ -121,8 +119,10 @@ def plot_confidence_ellipse(x : NDArray[np.number],
     # two-dimensional dataset.
     ell_radius_x = np.sqrt(1 + pearson)
     ell_radius_y = np.sqrt(1 - pearson)
-    ellipse = Ellipse((0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2,
-                      facecolor=facecolor, **kwargs)
+    ellipse = Ellipse(
+        (0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2,
+        facecolor=facecolor, **kwargs
+    )
 
     # Calculating the standard deviation of x from
     # the squareroot of the variance and multiplying
@@ -134,10 +134,9 @@ def plot_confidence_ellipse(x : NDArray[np.number],
     scale_y = np.sqrt(cov[1, 1]) * n_std
     mean_y = np.mean(y)
 
-    transf = transforms.Affine2D() \
-        .rotate_deg(45) \
-        .scale(scale_x, scale_y) \
-        .translate(mean_x, mean_y)
+    transf = (transforms.Affine2D().rotate_deg(45)
+                                   .scale(scale_x, scale_y)
+                                   .translate(mean_x, mean_y))
 
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)

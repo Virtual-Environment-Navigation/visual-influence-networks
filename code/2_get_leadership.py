@@ -1,6 +1,6 @@
 '''
 
-CI values are too computationally heavy, so I ran this script using supercomputer for each trial/segment (we used Oscar:(https://docs.ccv.brown.edu/oscar).
+BI values are too computationally heavy, so I ran this script using supercomputer for each trial/segment (we used Oscar:(https://docs.ccv.brown.edu/oscar).
 
 '''
 
@@ -10,7 +10,7 @@ import pickle
 import time
 import multiprocessing
 
-from utils.get_leadership import get_NI, get_NBI, get_CI, get_CBI, get_rank
+from utils.get_leadership import get_DI, get_DBI, get_BI, get_BBI, get_rank
 
 ## ====== change ONLY HERE ============
 prune_type = 'pruned'       # unpruned or pruned
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     else:
         raise ValueError('prune type error')
 
-    measure_types = ['NI', 'NBI', 'CI', 'CBI']
+    measure_types = ['DI', 'DBI', 'BI', 'BBI']
 
     print('Computing leadership measure types', measure_types)
     print('for', prune_type, 'networks in trials', trials, '(network window size:', ntwk_window_size, 's)\n')
@@ -59,14 +59,14 @@ if __name__ == "__main__":
                 print('----', measure_type, end=':')
                 leadership[measure_type][seg] = np.zeros((num_networks, N))
                 leadership[measure_type+'rank'][seg] = np.zeros((num_networks, N))
-                if measure_type=='NI':
-                    get_leadership = get_NI
-                elif measure_type=='NBI':
-                    get_leadership = get_NBI
-                elif measure_type=='CI':
-                    get_leadership = get_CI
-                elif measure_type=='CBI':
-                    get_leadership = get_CBI
+                if measure_type=='DI':
+                    get_leadership = get_DI
+                elif measure_type=='DBI':
+                    get_leadership = get_DBI
+                elif measure_type=='BI':
+                    get_leadership = get_BI
+                elif measure_type=='BBI':
+                    get_leadership = get_BBI
                 else:
                     raise ValueError('measure type error')
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
         if ~div_segs:
             filename = f'sayles_{prune_type}_trial{trial}_{ntwk_window_size_ms}ms_newnew.p'
-            # e.g., leadership['NIrank'][seg][ntwk,i]
+            # e.g., leadership['DIrank'][seg][ntwk,i]
             pickle.dump(leadership, open(f'../data/sayles_leadership_Oscar/{filename}', 'wb'))
             print(filename, 'saved')
 

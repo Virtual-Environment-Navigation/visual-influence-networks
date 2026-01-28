@@ -17,41 +17,40 @@ def plot_timeseries(x : np.ndarray,
                     output_file : str = 'leadership_dynamics',
                     output_format : str = 'png'):
     '''
-    Plot trajectories + time series of heading and speed in a given time window.
+    Plot trajectories + time series of heading and speed 
+    in a given time window.
 
     Parameters
-    -----
-    x, y : numpy array of float
+    ----------
+    x, y : ndarray of float
         Shape (num_datapoints, N).
         x & y positions.
-    heading, speed : numpy array of float
+    heading, speed : ndarray of float
         Shape (num_datapoints, N).
     SAMP_FREQ : int or float
         sample frequency (in Hz).
-
-    [Optional]
-    num_confs (default = 0) : int
+    num_confs (default = 0) : int (optional)
         * if 0 -> each pedestrian has a different color
-        * if not 0 -> the first [num_confs] pedestrians are plotted red, and 
-        otherwise black
-    IDs (default = None) : numpy array
+        * if not 0 -> the first [num_confs] pedestrians are plotted red, 
+        and otherwise black
+    IDs (default = None) : ndarray (optional)
         list of pedestrian IDs
-    plot_mean (default = False) : bool
+    plot_mean (default = False) : bool (optional)
         * if True -> mean time series of all pedestrains are plotted.
-    description (default = None) : str
+    description (default = None) : str (optional)
         * if not None -> added to the figure title
-    saved (default = True) : bool
+    saved (default = True) : bool (optional)
         * if True -> save plot
         * if False -> show plot
-    output_folder : str
+    output_folder : str (optional)
         output path
-    output_file : str
+    output_file : str (optional)
         output file name
-    output_format : str
+    output_format : str (optional)
         output file format (e.g., 'png', 'svg')
 
     Returns
-    -----
+    -------
     No returning value.
     '''
     num_datapoints, N = x.shape
@@ -84,20 +83,27 @@ def plot_timeseries(x : np.ndarray,
             colors.append(color)
     else:
         for i, ID in enumerate(IDs):
-            color = ax1.plot(x[:, i], y[:, i], linewidth=2, 
-                             color=("red" if (ID <= num_confs) else "black")
-                             )[0].get_color()
+            color = (
+                ax1.plot(
+                    x[:, i], y[:, i], linewidth=2, 
+                    color=("red" if (ID <= num_confs) else "black")
+                )[0].get_color()
+            )
             colors.append(color)
     for i, ID in enumerate(IDs):
         # circle & ID at the position in the first frame where the value is not NaN
         # only if the pedestrian is not missing the entire time
         if ~np.isnan(x[:,i]).all(): 
             ind = np.where(~np.isnan(x[:,i]))[0][0]
-            ax1.plot(x[ind, i], y[ind, i], 
-                     marker='o', markersize=15, color=colors[i])
-            ax1.text(x[ind, i], y[ind, i], str(ID), 
-                     color='white', fontsize=12, 
-                     horizontalalignment='center', verticalalignment='center')
+            ax1.plot(
+                x[ind, i], y[ind, i], 
+                marker='o', markersize=15, color=colors[i]
+            )
+            ax1.text(
+                x[ind, i], y[ind, i], str(ID), 
+                color='white', fontsize=12, 
+                horizontalalignment='center', verticalalignment='center'
+            )
     ax1.grid(True)
     ax1.set_aspect('equal')
     ax1.set_xlabel('$x$ [m]', fontsize=label_fontsize)
@@ -110,10 +116,13 @@ def plot_timeseries(x : np.ndarray,
         ax2.plot(time, heading, linewidth=2)
     else:
         for i in range(N):
-            ax2.plot(time, heading[:, i], 
-                     linewidth=2, color=("red" if (i < num_confs) else "black"))
+            ax2.plot(
+                time, heading[:, i], 
+                linewidth=2, color=("red" if (i < num_confs) else "black")
+            )
     if plot_mean:
-        ax2.plot(time, np.mean(heading, axis=1), color='greenyellow', linewidth=2)
+        ax2.plot(
+            time, np.mean(heading, axis=1), color='greenyellow', linewidth=2)
     ax2.grid(True)
     ax2.set_xlim(0, max(time))
     # ax2.set_ylim(-180, 180)
@@ -127,9 +136,13 @@ def plot_timeseries(x : np.ndarray,
         ax3.plot(time, speed, linewidth=2)
     else:
         for i in range(N):
-            ax3.plot(time, speed[:, i], linewidth=2, color=("red" if (i < num_confs) else "black"))
+            ax3.plot(
+                time, speed[:, i], linewidth=2, 
+                color=("red" if (i < num_confs) else "black")
+            )
     if plot_mean:
-        ax3.plot(time, np.mean(speed, axis=1), color='greenyellow', linewidth=2)
+        ax3.plot(
+            time, np.mean(speed, axis=1), color='greenyellow', linewidth=2)
     ax3.grid(True)
     ax3.set_xlim(0, max(time))
     ax3.set_ylim(0, np.ceil(np.nanmax(speed)))

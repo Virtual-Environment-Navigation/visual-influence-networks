@@ -19,32 +19,30 @@ def get_TDDC_ij(xvel_i : NDArray[Any],
     Compute TDDC for a given pair (i, j). Used in get_TDDC().
 
     Parameters
-    -----
-    xvel_i : numpy array
-        Shape (num_frames,). Represents velocities on x axis for pedestrian i.
-    yvel_i : numpy array
-        Shape (num_frames,). Represents velocities on y axis for pedestrian i.
-    xvel_j : numpy array
-        Shape (num_frames,). Represents velocities on x axis for pedestrian j.
-    yvel_j : numpy array
-        Shape (num_frames,). Represents velocities on y axis for pedestrian j.
+    ----------
+    xvel_i : ndarray of shape (num_frames,)
+        Velocities on x axis for pedestrian i.
+    yvel_i : ndarray of shape (num_frames,)
+        Velocities on y axis for pedestrian i.
+    xvel_j : ndarray of shape (num_frames,)
+        Velocities on x axis for pedestrian j.
+    yvel_j : ndarray of shape (num_frames,)
+        Velocities on y axis for pedestrian j.
     SAMP_FREQ : int or float
         sampling rate (in Hz)
-
-    [Optional]
-    TAU (default = 3) : int or float
+    TAU (default = 3) : int or float (optional)
         TAU window size (in s)
-    OMEGA (default = 40) : int or float
-        the number of samples on the left and on the right when getting TDDC
+    OMEGA (default = 40) : int or float (optional)
+        the number of samples on the left and on the right
     
     Returns
-    -----
-    h_ij : numpy array 
-        the scaler product with shape (num_TAU, num_frames).
-    TDDC_ij : numpy array 
-        TDDC values with shape (num_TAU, num_frames).
-    index_ij : numpy array 
-        max tau with shape (num_frames,). Missing data is indicated by NaNs.
+    -------
+    h_ij : ndarray of shape (num_TAU, num_frames)
+        the scaler product
+    TDDC_ij : ndarray of shape (num_TAU, num_frames)
+        TDDC values
+    index_ij : ndarray of shape (num_frames,)
+        max tau indices. Missing data is indicated by NaNs.
     '''
     # ----- init -----
     num_frames = len(xvel_i)    # number of frames (= time points)
@@ -56,42 +54,53 @@ def get_TDDC_ij(xvel_i : NDArray[Any],
     # --- get velocities for i at t ---
     vel_i = np.column_stack((xvel_i, yvel_i))   # (num_frames, 2)
     # --- get velocities for j at t+τ ---
-    TAU_index = (np.tile(np.arange(num_frames), (num_TAU, 1)) 
-                 - TAU * SAMP_FREQ
-                 + (num_TAU - np.tile(np.arange(num_TAU), (num_frames, 1)).T)
-                 - 1)   # adjust for python indexing. Shape : (num_TAU, num_frames)
-    TAU_index = np.clip(TAU_index, 0, num_frames-1)     # limit TAU_index to [0, num_frames-1]
-    vel_j_TAU = np.stack([xvel_j[TAU_index], yvel_j[TAU_index]], axis=2) # (num_TAU, num_frames, 2)
+    TAU_index = (
+        np.tile(np.arange(num_frames), (num_TAU, 1)) 
+        - TAU * SAMP_FREQ
+        + (num_TAU - np.tile(np.arange(num_TAU), (num_frames, 1)).T)
+        - 1
+    )   # adjust for python indexing. Shape : (num_TAU, num_frames)
+    # limit TAU_index to [0, num_frames-1]
+    TAU_index = np.clip(TAU_index, 0, num_frames-1)
+    # (num_TAU, num_frames, 2)
+    vel_j_TAU = np.stack([xvel_j[TAU_index], yvel_j[TAU_index]], axis=2)
     # --- get the scaler product vel_ij ---
     norm_vel_i = np.linalg.norm(vel_i, axis=1, keepdims=True)
     norm_vel_j_TAU = np.linalg.norm(vel_j_TAU, axis=2, keepdims=True)
-    h_ij = np.einsum('jk,ijk->ij', vel_i/norm_vel_i, vel_j_TAU/norm_vel_j_TAU)  # (num_TAU, num_frames)
-    ''' ----- einsum does the same as the following ----- '''
+    # (num_TAU, num_frames)
+    h_ij = np.einsum('jk,ijk->ij', vel_i/norm_vel_i, vel_j_TAU/norm_vel_j_TAU)  
+    ## einsum does the same as the following:
     # h_ij = np.zeros((num_TAU, num_frames))
     # for k in range(num_frames):     # for each t [0, num_frames-1]
-    #     h_ij[:, k] = np.array([ np.dot(vel_i[k,:] / norm_vel_i[k,:],
-    #                                      vel_j_TAU[h,k,:] / norm_vel_j_TAU[h,k,:])
-    #                               for h in range(num_TAU-1, -1, -1) ])
+    #     h_ij[:, k] = np.array([ 
+    #         np.dot(vel_i[k,:] / norm_vel_i[k,:],
+    #                vel_j_TAU[h,k,:] / norm_vel_j_TAU[h,k,:])
+    #         for h in range(num_TAU-1, -1, -1)
+    #     ])
     # h_ij[:, k] = np.flip(h_ij, axis=0)
     
 
     # ===== calculate TDDC =====
-    # TDDC: C_ij(t,τ) = h_ij[(t-ω*Δt):(t+ω*Δt)+1,τ] / (2ω+1)
-    # https://www.nature.com/articles/s41598-020-75551-2
     # --- get k range for each frame ---
-    # These are not the actual values of k, but indices of h_ij.
-    # Because these values are indices, we don't have to multiply by sample frequency.
+    # These are not the actual values of k, but indices of h_ij, 
+    # & we don't have to multiply by sample frequency.
     # for a given frame: low_index = (t-ω*Δt), high_index = (t+ω*Δt)
-    low_ind = np.maximum(np.arange(num_frames) - OMEGA, 0).astype(int)    # (num_frames,)
-    high_ind = np.minimum(np.arange(num_frames) + OMEGA, num_frames - 1).astype(int)   # (num_frames,)
+    # (num_frames,)
+    low_ind = np.maximum(np.arange(num_frames) - OMEGA, 0).astype(int)
+    high_ind = np.minimum(np.arange(num_frames) + OMEGA, num_frames - 1).astype(int)
     # --- get TDDC for a given i & j ---
-    # sum of h_ij[(t-ω*Δt):(t+ω*Δt)+1, τ] = cumulative sum of h_ij[:(t+ω*Δt)+1, τ] 
-    #                                       - cumulative sum of h_ij[:(t-ω*Δt), τ]
-    cumsum_h_ij = np.nancumsum(h_ij[:, :], axis=1)  # ignore nan; (num_TAU, num_frames)
-    TDDC_ij = (cumsum_h_ij[:, high_ind] - cumsum_h_ij[:, low_ind-1]) \
-          / (high_ind - low_ind + 1)   # (num_TAU, num_frames)
-    TDDC_ij[:, low_ind == 0] = cumsum_h_ij[:, high_ind[low_ind == 0]] / (high_ind[low_ind == 0] + 1)
-    # --- add nan for where the velocities were missing & TDDC should be nan ---
+    # sum of h_ij[(t-ω*Δt):(t+ω*Δt)+1, τ] 
+    #  = cumsum of h_ij[:(t+ω*Δt)+1, τ] - cumsum of h_ij[:(t-ω*Δt), τ]
+    # ignore nan; (num_TAU, num_frames)
+    cumsum_h_ij = np.nancumsum(h_ij[:, :], axis=1)  
+    TDDC_ij = (
+        (cumsum_h_ij[:, high_ind] - cumsum_h_ij[:, low_ind-1])
+        / (high_ind - low_ind + 1)
+    )   # (num_TAU, num_frames)
+    TDDC_ij[:, low_ind == 0] = (
+        cumsum_h_ij[:, high_ind[low_ind == 0]] / (high_ind[low_ind == 0] + 1)
+    )
+    # --- add nan for where the velocities were missing & TDDC should be nan --
     mask = np.isnan(h_ij)
     nan_indices = np.where(mask)
     for idx in range(len(nan_indices[0])):
@@ -104,8 +113,10 @@ def get_TDDC_ij(xvel_i : NDArray[Any],
     # TDDC_ij = np.zeros((num_TAU, num_frames))
     # for h in range(num_TAU - 1, -1, -1):
     #     for k in range(num_frames):
-    #         TDDC_ij[h, k] = np.nansum(h_ij[h, low_indices[k]:high_indices[k] + 1])
-    #         TDDC_ij[h, k] /= (high_indices[k] - low_indices[k] + 1)
+    #         TDDC_ij[h, k] = (
+    #             np.nansum(h_ij[h, low_indices[k]:high_indices[k] + 1])
+    #             /= (high_indices[k] - low_indices[k] + 1)
+    #         )
 
     # ===== get index of max tau  =====
     index_ij = np.argmax(np.flipud(TDDC_ij), axis=0)    # (num_frames,)
@@ -126,35 +137,35 @@ def get_TDDC(xvel : NDArray[Any],
     get_TDDC_ij().
 
     Parameters
-    -----
-    xvel : numpy array
+    ----------
+    xvel : ndarray
         Shape (num_frames, N). Represents velocities on x axis for all 
         pedestrians in a given time window.
-    yvel : numpy array
+    yvel : ndarray
         Shape (num_frames, N). Represents velocities on y axis for all 
         pedestrians in a given time window.
     SAMP_FREQ : int or float
         sampling rate (in Hz).
-
-    [Optional]
-    TAU (default = 3) : int or float
+    TAU (default = 3) : int or float (optional)
         TAU window size (in s)
-    OMEGA (default = 40) : int or float
-        the number of samples on the left and on the right when getting TDDC
+    OMEGA (default = 40) : int or float (optional)
+        the number of samples on the left and on the right
 
     Returns
-    ----
-    h : numpy array
+    -------
+    h : ndarray
         Shape (N, N, num_TAU, num_frames). The scaler product vel_ij for 
         calculating TDDC.
-    TDDC : numpy array
-        Shape (N, N, num_TAU, num_frames). TDDC values. Each of the 4 axes 
-        indicates:
+    TDDC : ndarray
+        Shape (N, N, num_TAU, num_frames). TDDC values. Each of the 4 
+        axes indicates:
         (1) agent i (the pedestrian who are "leading")
         (2) agent j (the pedestrian who are "following")
-        (3) num_TAU = number of time points on y axis in TDDC heat maps
-        (4) num_frames = number of time points on x axis in TDDC heat maps
-    index : numpy array
+        (3) num_TAU = number of time points on vertical axis 
+        in TDDC heat maps
+        (4) num_frames = number of time points on horizontal axis 
+        in TDDC heat maps
+    index : ndarray
         Shape (N, N, num_frames). Represents indices of max tau.
     '''
     # init
@@ -190,34 +201,32 @@ def plot_TDDC_ij(TDDC_ij : NDArray[Any],
     Plot a TDDC heat map for a given pair (i, j) in a given time window.
 
     Parameters
-    -----
-    TDDC_ij : numpy array
+    ----------
+    TDDC_ij : ndarray
         Shape (num_tau, num_frames). TDDC values for a given pair.
-    index_ij : numpy array
+    index_ij : ndarray
         Shape (num_frames). Indices of max tau for a given pair.
     SAMP_FREQ : int or float
         sampling rate (in Hz).
-        
-    [Optional]
-    TAU (default = 3) : int or float
+    TAU (default = 3) : int or float (optional)
         TAU window size (in s)
-    CLIM_INF (default = 0): int or float
+    CLIM_INF (default = 0): int or float (optional)
         the lower end of the data range that the colormap covers.
-    CLIM_SUP (default = 1): int or float
+    CLIM_SUP (default = 1): int or float (optional)
         the upper end of the data range that the colormap covers.
-    title (default = None) : str
+    title (default = None) : str (optional)
         figure title
-    saved (default = True) : bool
+    saved (default = True) : bool (optional)
         whether to save the plot or to show
-    output_folder (default='output/TDDC/') : str
+    output_folder (default='output/TDDC/') : str (optional)
         where to save the folder. used only if saved is True.
-    output_file (default='TDDC') : str
+    output_file (default='TDDC') : str (optional)
         used only if saved is True.
-    output_format (default='png') : str
+    output_format (default='png') : str (optional)
         used only if saved is True.
     
     Returns
-    -----
+    -------
     No returning value.
     '''
     num_tau, num_frames = TDDC_ij.shape
