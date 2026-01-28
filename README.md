@@ -1,5 +1,5 @@
 # Visual Influence Networks
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13765410.svg)](https://doi.org/10.5281/zenodo.13765410)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18406153.svg)](https://doi.org/10.5281/zenodo.18406153)
 
 This GitHub repository contains code for the reconstruction and analysis of visual influence networks.
 The details of the project is described in:
